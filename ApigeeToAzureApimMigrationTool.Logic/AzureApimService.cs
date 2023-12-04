@@ -236,7 +236,7 @@ namespace ApigeeToAzureApimMigrationTool.Service
 
                 var flows = apiProxyEndpointXml.Root.Element("Flows");
 
-                if (flows.Elements("Flow").Count() > 0)
+                if (flows.Elements("Flow")?.Count() > 0)
                 {
                     foreach (var flow in flows.Elements("Flow"))
                     {
@@ -489,7 +489,7 @@ namespace ApigeeToAzureApimMigrationTool.Service
                     else
                         parentElementName = removePolicy ? "Remove" : "Add";
 
-                    if (element.Element(parentElementName).Element("Headers") != null)
+                    if (element.Element(parentElementName)?.Element("Headers") != null)
                     {
                         foreach (var header in element.Element(parentElementName).Element("Headers").Elements("Header"))
                         {
@@ -497,8 +497,7 @@ namespace ApigeeToAzureApimMigrationTool.Service
                         }
                     }
 
-
-                    if (element.Element(parentElementName).Element("Payload") != null)
+                    if (element.Element(parentElementName)?.Element("Payload") != null)
                     {
                         apimPolicyElement.Add(SetBody(element.Element(parentElementName).Element("Payload"), condition));
                     }
