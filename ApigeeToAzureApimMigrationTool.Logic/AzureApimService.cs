@@ -482,12 +482,15 @@ namespace ApigeeToAzureApimMigrationTool.Service
                 case "AssignMessage":
                     bool removePolicy = element.Elements().Any(x => x.Name.ToString() == "Remove");
                     bool setPolicy = element.Elements().Any(x => x.Name.ToString() == "Set");
+                    bool assignVariable = element.Elements().Any(x => x.Name.ToString() == "AssignVariable");
 
                     string parentElementName;
                     if (setPolicy)
                         parentElementName = "Set";
+                    else if (removePolicy)
+                        parentElementName = "Remove";
                     else
-                        parentElementName = removePolicy ? "Remove" : "Add";
+                        parentElementName = "AssignVariable";
 
                     if (element.Element(parentElementName)?.Element("Headers") != null)
                     {
@@ -500,6 +503,18 @@ namespace ApigeeToAzureApimMigrationTool.Service
                     if (element.Element(parentElementName)?.Element("Payload") != null)
                     {
                         apimPolicyElement.Add(SetBody(element.Element(parentElementName).Element("Payload"), condition));
+                    }
+
+                    if (element.Element(parentElementName) != null)
+                    {
+                        var name = element.Element(parentElementName).Element("Name")?.Value;
+                        var template = element.Element(parentElementName).Element("Template")?.Value;
+
+                        var newPolicy = new XElement("set-variable", new XAttribute("name", name), new XAttribute("value", "{{" + template + "}}"));
+
+                        apimPolicyElement.Add(newPolicy);
+
+                        //apimPolicyElement.Add(SetBody(element.Element(parentElementName).Element("Payload"), condition));
                     }
 
                     break;
