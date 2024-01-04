@@ -1,4 +1,5 @@
 ﻿using ApigeeToApimMigrationTool.Core;
+using ApigeeToApimMigrationTool.Core.Config;
 using ApigeeToApimMigrationTool.Core.Interface;
 using ApigeeToAzureApimMigrationTool.Core;
 using ApigeeToAzureApimMigrationTool.Core.dto;
@@ -16,19 +17,19 @@ namespace ApigeeToAzureApimMigrationTool.Service
         private readonly HttpClient _client;
         private readonly string _authenticationBaseUrl;
         private readonly IProxyMetaDataDataAccess _proxyMetaDataDataAccess;
-        public ApigeeManagementApiService(string apigeeManagementApiBaseUrl, string authenticationBaseUrl, string organizationName, string proxyName, string? environmentName, IProxyMetaDataDataAccess proxyMetaDataDataAccess)
+        public ApigeeManagementApiService(ApigeeConfiguration apigeeConfiguration, IProxyMetaDataDataAccess proxyMetaDataDataAccess)
         {
             _client = new HttpClient();
-            _client.BaseAddress = new Uri($"{apigeeManagementApiBaseUrl}/v1/organizations/{organizationName}/");
-            _authenticationBaseUrl = authenticationBaseUrl;
+            _client.BaseAddress = new Uri($"{apigeeConfiguration.ManagementBaseUrl}/v1/organizations/{apigeeConfiguration.OrganizationName}/");
+            _authenticationBaseUrl = apigeeConfiguration.AuthenticationBaseUrl;
             _proxyMetaDataDataAccess = proxyMetaDataDataAccess;
 
             AuthenticationToken = string.Empty;
             Username = string.Empty;
             Password = string.Empty;
 
-            ProxyName = proxyName;
-            Environment = environmentName;
+            ProxyName = apigeeConfiguration.ProxyOrProductName;
+            Environment = apigeeConfiguration.EnvironmentName;
         }
 
         public string AuthenticationToken { get; set;}
