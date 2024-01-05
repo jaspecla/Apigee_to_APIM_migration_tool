@@ -177,15 +177,7 @@ async Task RunMigration(string configFile,
             ));
 
     builder.Services.AddSingleton<IApimProvider, AzureApimProvider>(
-        serviceProvider => new AzureApimProvider(
-                 subscriptionId: entraConfiguration.SubscriptionId,
-                    tenantId: entraConfiguration.TenantId,
-                    clientId: entraConfiguration.AppId,
-                    clientSecret: entraConfiguration.Password,
-                    resourceGroupName: apimConfiguration.ResourceGroup,
-                    apimName: apimConfiguration.Name,
-                    apimUrl: apimConfiguration.Url,
-                    keyVaultName: keyVaultName));
+        serviceProvider => new AzureApimProvider(apimConfiguration, entraConfiguration, keyVaultName));
 
     // TODO: Load with local file bundle provider based on config
     builder.Services.AddSingleton<IBundleProvider, ApigeeOnlineBundleProvider>();
