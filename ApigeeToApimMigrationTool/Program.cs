@@ -1,5 +1,4 @@
 ﻿// See https://aka.ms/new-console-template for more information
-using ApigeeToApimMigrationTool.Config;
 using ApigeeToApimMigrationTool.Core.Config;
 using ApigeeToApimMigrationTool.Core.Interface;
 using ApigeeToApimMigrationTool.DataAccess;
