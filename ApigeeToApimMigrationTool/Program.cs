@@ -15,11 +15,6 @@ using System.CommandLine;
 
 Console.WriteLine("Starting up ...");
 
-// Config source options
-var configFileOption = new Option<string>(
-    name: "--configFile",
-    description: "Configuration file path");
-
 // Apigee Options
 var apigeeOrgNameOption = new Option<string>(
     name: "--apigeeOrganizationName",
@@ -58,6 +53,9 @@ var apigeeEnvironmentNameOption = new Option<string>(
     name: "--apigeeEnvironmentName",
     description: "Apigee environment name");
 
+var apigeeConfigDirOption = new Option<string>(
+    name: "--apigeeConfigDir",
+    description: "Specify a local directory to load the Apigee configuration bundle from (optional)");
 
 // Entra (Azure AD) Options
 var azureAppIdOption = new Option<string>(
@@ -114,7 +112,6 @@ var databaseConnectionStringOption = new Option<string>(
 
 var rootCommand = new RootCommand("Apigee to Azure APIM migration tool")
 {
-    configFileOption,
     apigeeOrgNameOption,
     apigeeAuthenticationBaseUrlOption,
     apigeeManagementApiBaseUrlOption,
@@ -124,6 +121,7 @@ var rootCommand = new RootCommand("Apigee to Azure APIM migration tool")
     proxyOrProductOption,
     proxyOrProductNameOption,
     apigeeEnvironmentNameOption,
+    apigeeConfigDirOption,
     azureAppIdOption,
     azurePasswordOption,
     azureTenantIdOption,
@@ -138,12 +136,11 @@ var rootCommand = new RootCommand("Apigee to Azure APIM migration tool")
     databaseConnectionStringOption
 };
 
-rootCommand.SetHandler(async (configFile, apigeeConfig, entraConfig, apimConfig, keyVaultName, databaseConnectionString) =>
+rootCommand.SetHandler(async (apigeeConfig, entraConfig, apimConfig, keyVaultName, databaseConnectionString) =>
 {
-    await RunMigration(configFile, apigeeConfig, entraConfig, apimConfig, keyVaultName, databaseConnectionString);
-},
-configFileOption, 
-new ApigeeConfigurationBinder(apigeeOrgNameOption, apigeeAuthenticationBaseUrlOption, apigeeManagementApiBaseUrlOption, apigeePasscodeOption, apigeeUsernameOption, apigeePasswordOption, proxyOrProductOption, proxyOrProductNameOption, apigeeEnvironmentNameOption),
+    await RunMigration(apigeeConfig, entraConfig, apimConfig, keyVaultName, databaseConnectionString);
+}, 
+new ApigeeConfigurationBinder(apigeeOrgNameOption, apigeeAuthenticationBaseUrlOption, apigeeManagementApiBaseUrlOption, apigeePasscodeOption, apigeeUsernameOption, apigeePasswordOption, proxyOrProductOption, proxyOrProductNameOption, apigeeEnvironmentNameOption, apigeeConfigDirOption),
 new EntraConfigurationBinder(azureAppIdOption, azurePasswordOption, azureTenantIdOption, azureSubscriptionIdOption), 
 new ApimConfigurationBinder(apimUrlOption, apimNameOption, apimResourceGroupOption, apimOauthConfigNameOption, apimOauthBackendAppIdOption, apimOauthTenantIdOption), 
 keyVaultNameOption, databaseConnectionStringOption);
@@ -151,8 +148,7 @@ keyVaultNameOption, databaseConnectionStringOption);
 await rootCommand.InvokeAsync(args);
 
 #region dependency injection
-async Task RunMigration(string configFile, 
-    ApigeeConfiguration apigeeConfiguration, EntraConfiguration entraConfiguration, ApimConfiguration apimConfiguration, 
+async Task RunMigration(ApigeeConfiguration apigeeConfiguration, EntraConfiguration entraConfiguration, ApimConfiguration apimConfiguration, 
     string keyVaultName, 
     string databaseConnectionString)
 {
@@ -164,10 +160,20 @@ async Task RunMigration(string configFile,
 
     builder.Services.AddSingleton<IApigeeXmlLoader, ApigeeXmlFileLoader>();
 
-    builder.Services.AddSingleton<IApigeeManagementApiService, ApigeeManagementApiService>(
-        serviceProvider => new ApigeeManagementApiService(
+    if (apigeeConfiguration.ConfigDir != null)
+    {
+        builder.Services.AddSingleton<IApigeeManagementApiService, ApigeeManagementApiTestFileService>(
+            serviceProvider => new ApigeeManagementApiTestFileService(
+                apigeeBundleProvider: serviceProvider.GetRequiredService<IBundleProvider>(),
+                apigeeXmlLoader: serviceProvider.GetRequiredService<IApigeeXmlLoader>()));
+    }
+    else
+    {
+        builder.Services.AddSingleton<IApigeeManagementApiService, ApigeeManagementApiService>(
+            serviceProvider => new ApigeeManagementApiService(
             proxyMetaDataDataAccess: serviceProvider.GetRequiredService<IProxyMetaDataDataAccess>(),
             apigeeConfiguration: apigeeConfiguration));
+    }
 
     builder.Services.AddSingleton<IAzureApimService, AzureApimService>(
         serviceProvider => new AzureApimService(
@@ -179,8 +185,15 @@ async Task RunMigration(string configFile,
     builder.Services.AddSingleton<IApimProvider, AzureApimProvider>(
         serviceProvider => new AzureApimProvider(apimConfiguration, entraConfiguration, keyVaultName));
 
-    // TODO: Load with local file bundle provider based on config
-    builder.Services.AddSingleton<IBundleProvider, ApigeeOnlineBundleProvider>();
+    if (apigeeConfiguration.ConfigDir != null)
+    {
+        builder.Services.AddSingleton<IBundleProvider, ApigeeFileBundleProvider>(
+            serviceProvider => new ApigeeFileBundleProvider(apigeeConfiguration.ConfigDir));
+    }
+    else
+    {
+        builder.Services.AddSingleton<IBundleProvider, ApigeeOnlineBundleProvider>();
+    }
 
     builder.Services.AddSingleton<IPolicyTransformationFactory, PolicyTransformationFactory>();
     builder.Services.AddSingleton<IApimPolicyTransformer, ApigeeToApimPolicyTransformer>();
@@ -247,7 +260,6 @@ async Task MigrateApiProxy(IServiceProvider hostProvider, string proxyOrProductN
     var bundleProvider = provider.GetRequiredService<IBundleProvider>();
 
     //get api metadata
-    // TODO - use IBundleProvider ********
     Console.WriteLine("Downloading the proxy api bundle...");
     await bundleProvider.LoadBundle(proxyOrProductName);
     Console.WriteLine($"Migrating API proxy {proxyOrProductName} to Azure APIM");

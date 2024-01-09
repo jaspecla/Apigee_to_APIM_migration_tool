@@ -17,5 +17,7 @@ namespace ApigeeToApimMigrationTool.Core.Config
         public string? ProxyOrProduct { get; set; }
         public string? ProxyOrProductName { get; set; }
         public string? EnvironmentName { get; set; }
+        public string? ConfigDir { get; set; }
+        public bool UseTestService { get; set; }
     }
 }

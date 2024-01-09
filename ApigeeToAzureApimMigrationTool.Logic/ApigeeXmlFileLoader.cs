@@ -37,12 +37,12 @@ namespace ApigeeToAzureApimMigrationTool.Service
 
         public XDocument LoadSharedFlowBundleXml(string sharedFlowName)
         {
-            return XDocument.Load(Path.Combine(_bundleProvider.GetBundlePath(), sharedFlowName, "sharedflowbundle", $"{sharedFlowName}.xml"));
+            return XDocument.Load(Path.Combine(_bundleProvider.GetBundlePath(), "sharedflowbundle", $"{sharedFlowName}.xml"));
         }
 
         public XDocument LoadSharedFlowXml(string sharedFlowName)
         {
-            return XDocument.Load(Path.Combine(_bundleProvider.GetBundlePath(), sharedFlowName, "sharedflowbundle", "sharedflows", $"{sharedFlowName}.xml"));
+            return XDocument.Load(Path.Combine(_bundleProvider.GetBundlePath(), "sharedflowbundle", "sharedflows", $"{sharedFlowName}.xml"));
         }
 
         public XDocument LoadSharedFlowPolicyXml(string policyName)

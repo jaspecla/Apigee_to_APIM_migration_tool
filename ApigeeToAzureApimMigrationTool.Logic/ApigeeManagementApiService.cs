@@ -43,7 +43,6 @@ namespace ApigeeToAzureApimMigrationTool.Service
         /// 
         /// </summary>
         /// <param name="proxyName"></param>
-        /// <param name="bearerToken"></param>
         /// <returns></returns>
         public async Task<ApigeeEntityModel> GetApiProxyByName(string proxyName)
         {

@@ -19,6 +19,7 @@ namespace ApigeeToApimMigrationTool.Core.Config
         private readonly Option<string> _proxyOrProductOption;
         private readonly Option<string> _proxyOrProductNameOption;
         private readonly Option<string> _environmentNameOption;
+        private readonly Option<string> _configDirOption;
 
         public ApigeeConfigurationBinder(
             Option<string> organizationNameOption,
@@ -29,7 +30,8 @@ namespace ApigeeToApimMigrationTool.Core.Config
             Option<string> passwordOption,
             Option<string> proxyOrProductOption,
             Option<string> proxyOrProductNameOption,
-            Option<string> environmentNameOption)
+            Option<string> environmentNameOption,
+            Option<string> configDirOption)
         {
             _organizationNameOption = organizationNameOption;
             _authenticationBaseUrlOption = authenticationBaseUrlOption;
@@ -40,6 +42,7 @@ namespace ApigeeToApimMigrationTool.Core.Config
             _proxyOrProductOption = proxyOrProductOption;
             _proxyOrProductNameOption = proxyOrProductNameOption;
             _environmentNameOption = environmentNameOption;
+            _configDirOption = configDirOption;
         }
 
         protected override ApigeeConfiguration GetBoundValue(BindingContext bindingContext) =>
@@ -53,7 +56,8 @@ namespace ApigeeToApimMigrationTool.Core.Config
                 Password = bindingContext.ParseResult.GetValueForOption(_passwordOption),
                 ProxyOrProduct = bindingContext.ParseResult.GetValueForOption(_proxyOrProductOption),
                 ProxyOrProductName = bindingContext.ParseResult.GetValueForOption(_proxyOrProductNameOption),
-                EnvironmentName = bindingContext.ParseResult.GetValueForOption(_environmentNameOption)
+                EnvironmentName = bindingContext.ParseResult.GetValueForOption(_environmentNameOption),
+                ConfigDir = bindingContext.ParseResult.GetValueForOption(_configDirOption),
             };
     }
 }
