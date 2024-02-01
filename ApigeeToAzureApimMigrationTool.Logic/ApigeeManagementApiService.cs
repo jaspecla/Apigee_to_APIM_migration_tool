@@ -92,13 +92,12 @@ namespace ApigeeToAzureApimMigrationTool.Service
             return result;
         }
 
-        public async Task<string> DownloadApiProxyBundle(string proxyName, int revision)
+        public async Task<string> DownloadApiProxyBundle(string basePath, string proxyName, int revision)
         {
             await ResetHttpClient();
             HttpResponseMessage apiRevisionResponse = await _client.GetAsync($"apis/{proxyName}/revisions/{revision}?format=bundle");
 
             Stream inputStream = await apiRevisionResponse.Content.ReadAsStreamAsync();
-            string basePath = Path.GetDirectoryName(System.Reflection.Assembly.GetExecutingAssembly().Location);
             string proxyPath = Directory.CreateDirectory(Path.Combine(basePath, proxyName)).FullName;
             string zipPath = Path.Combine(proxyPath, $"{proxyName}.zip");
             using (FileStream outputFileStream = new FileStream(zipPath, FileMode.Create, FileAccess.Write))
@@ -120,13 +119,12 @@ namespace ApigeeToAzureApimMigrationTool.Service
             return apiMetaData;
         }
 
-        public async Task<string> DownloadSharedFlowBundle(string sharedFlowName, int revision)
+        public async Task<string> DownloadSharedFlowBundle(string basePath, string sharedFlowName, int revision)
         {
             await ResetHttpClient();
             HttpResponseMessage apiRevisionResponse = await _client.GetAsync($"sharedflows/{sharedFlowName}/revisions/{revision}?format=bundle");
 
             Stream inputStream = await apiRevisionResponse.Content.ReadAsStreamAsync();
-            string basePath = Path.GetDirectoryName(System.Reflection.Assembly.GetExecutingAssembly().Location);
             string sharedFlowPath = Directory.CreateDirectory(Path.Combine(basePath, sharedFlowName)).FullName;
             string zipPath = Path.Combine(sharedFlowPath, $"{sharedFlowName}.zip");
             using (FileStream outputFileStream = new FileStream(zipPath, FileMode.Create, FileAccess.Write))
@@ -203,6 +201,8 @@ namespace ApigeeToAzureApimMigrationTool.Service
         {
             HttpClient client = new HttpClient();
 
+            // NOT A REAL TOKEN.  THIS IS A DEFAULT TOKEN THAT IS REQUIRED FOR ALL CLIENTS BY THE API
+            // See: https://docs.apigee.com/api-platform/system-administration/management-api-tokens#request-headers
             client.DefaultRequestHeaders.Add("Authorization", "Basic ZWRnZWNsaTplZGdlY2xpc2VjcmV0");
 
             HttpResponseMessage authTokenResponse = await client.PostAsync($"{_authenticationBaseUrl}/oauth/token?grant_type=password&username={Username}&password={Password}", null);

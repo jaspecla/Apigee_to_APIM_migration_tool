@@ -2,6 +2,7 @@
 using ApigeeToAzureApimMigrationTool.Core.dto;
 using ApigeeToAzureApimMigrationTool.Core.Dto;
 using ApigeeToAzureApimMigrationTool.Core.Interface;
+using ApigeeToAzureApimMigrationTool.Service.Bundles;
 using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
@@ -14,19 +15,14 @@ namespace ApigeeToAzureApimMigrationTool.Service
 {
     public class ApigeeManagementApiTestFileService : IApigeeManagementApiService
     {
-        private readonly ApigeeFileBundleProvider _apigeeBundleProvider;
+        private readonly IBundleProvider _apigeeBundleProvider;
         private readonly IApigeeXmlLoader _apigeeXmlLoader;
-        public ApigeeManagementApiTestFileService(IBundleProvider apigeeBundleProvider, IApigeeXmlLoader apigeeXmlLoader)
+        private readonly string _localConfigPath;
+        public ApigeeManagementApiTestFileService(IBundleProvider apigeeBundleProvider, IApigeeXmlLoader apigeeXmlLoader, string localConfigPath)
         {
-            var bundleProvider = apigeeBundleProvider as ApigeeFileBundleProvider;
-            if (bundleProvider == null)
-            {
-                // Hack hack hack
-                throw new Exception("ApigeeManagementApiTestFileService must be used with ApigeeFileBundleProvider.");
-            }
-
-            _apigeeBundleProvider = bundleProvider;
+            _apigeeBundleProvider = apigeeBundleProvider;
             _apigeeXmlLoader = apigeeXmlLoader;
+            _localConfigPath = localConfigPath;
         }
         public string AuthenticationToken { get; set; }
         public string Username { get; set; }
@@ -69,13 +65,13 @@ namespace ApigeeToAzureApimMigrationTool.Service
             return Task.FromResult(apiProxyModel);
         }
 
-        public async Task<ApigeeTargetServerModel> GetTargetServerByName(string targetServerName, string environment)
+        public Task<ApigeeTargetServerModel> GetTargetServerByName(string targetServerName, string environment)
         {
             var defaultTargetServer = new ApigeeTargetServerModel
             {
-                Host = "localhost",
+                Host = targetServerName,
                 IsEnabled = true,
-                Name = "default",
+                Name = targetServerName,
                 Port = 8080,
                 SSLInfo = new ApigeeTargetServerSSLInfo
                 {
@@ -88,44 +84,21 @@ namespace ApigeeToAzureApimMigrationTool.Service
                 }
             };
 
-            // Load pre-configured target json file
-            var targetServerFilePathBuilder = new StringBuilder($"{_apigeeBundleProvider.GetBundlePath()}{Path.DirectorySeparatorChar}targets{Path.DirectorySeparatorChar}{targetServerName}");
-            if (!string.IsNullOrEmpty(environment))
-            {
-                targetServerFilePathBuilder.Append($".{environment}");
-            }
-            targetServerFilePathBuilder.Append(".json");
-
-            string targetServerFilePath = targetServerFilePathBuilder.ToString();
-
-            if (!File.Exists(targetServerFilePath))
-            {
-                return defaultTargetServer;
-            }
-
-            string targetServerJson = await File.ReadAllTextAsync(targetServerFilePath);
-            var targetServerModel = JsonConvert.DeserializeObject<ApigeeTargetServerModel>(targetServerJson);
-
-            if (targetServerModel == null)
-            {
-                return defaultTargetServer;
-            }
-
-            return targetServerModel;
+            return Task.FromResult(defaultTargetServer);
         }
 
-        public Task<string> DownloadApiProxyBundle(string proxyName, int revision)
+        public Task<string> DownloadApiProxyBundle(string basePath, string proxyName, int revision)
         {
             // Return the path of the already downloaded bundle
-            var proxyPath = Path.Combine(_apigeeBundleProvider.GetBaseBundlePath(), proxyName);
-            return Task.FromResult(proxyPath);
+            var bundle = _apigeeBundleProvider.GetApiProxyBundle(proxyName);
+            return Task.FromResult(bundle.GetBundlePath());
         }
 
-        public Task<string> DownloadSharedFlowBundle(string sharedFlowName, int revision)
+        public Task<string> DownloadSharedFlowBundle(string basePath, string sharedFlowName, int revision)
         {
             // Return the path of the already downloaded shared flow bundle
-            var sharedFlowPath = Path.Combine(_apigeeBundleProvider.GetBaseBundlePath(), sharedFlowName);
-            return Task.FromResult(sharedFlowPath);
+            var bundle = _apigeeBundleProvider.GetSharedFlowBundle(sharedFlowName);
+            return Task.FromResult(bundle.GetBundlePath());
         }
 
         public async Task<ApiProductMetaData> GetApiProductByName(string productName)
@@ -139,7 +112,9 @@ namespace ApigeeToAzureApimMigrationTool.Service
             };
 
             // Iterate through the bundle directory and find all the proxies that are in the product
-            var bundlePath = _apigeeBundleProvider.GetBaseBundlePath();
+            // TODO: Does this work?  1/31
+            var bundle = _apigeeBundleProvider.GetApiProxyBundle(productName);
+            var bundlePath = bundle.GetBundlePath();
             var bundleDirectories = Directory.GetDirectories(bundlePath);
             foreach (var directory in bundleDirectories)
             {
@@ -148,9 +123,10 @@ namespace ApigeeToAzureApimMigrationTool.Service
                     defaultApiProductMetaData.Proxies.Add(Path.GetFileName(directory));
                 }
             }
+            // END TODO
 
             // Load pre-configured product json file
-            var apiProductFilePathBuilder = new StringBuilder($"{_apigeeBundleProvider.GetBundlePath()}{Path.DirectorySeparatorChar}apiproducts{Path.DirectorySeparatorChar}{productName}.json");
+            var apiProductFilePathBuilder = new StringBuilder($"{_localConfigPath}{Path.DirectorySeparatorChar}apiproducts{Path.DirectorySeparatorChar}{productName}.json");
 
             string apiProductFilePath = apiProductFilePathBuilder.ToString();
 
@@ -175,7 +151,7 @@ namespace ApigeeToAzureApimMigrationTool.Service
         {
 
             // Load pre-configured kvmap json file
-            var keyValueMapFilePathBuilder = new StringBuilder($"{_apigeeBundleProvider.GetBundlePath()}{Path.DirectorySeparatorChar}keyvaluemaps{Path.DirectorySeparatorChar}{mapIdentifier}");
+            var keyValueMapFilePathBuilder = new StringBuilder($"{_localConfigPath}{Path.DirectorySeparatorChar}keyvaluemaps{Path.DirectorySeparatorChar}{mapIdentifier}");
             if (!string.IsNullOrEmpty(environment))
             {
                 keyValueMapFilePathBuilder.Append($".{environment}");

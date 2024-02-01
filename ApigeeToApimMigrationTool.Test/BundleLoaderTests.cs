@@ -1,6 +1,7 @@
 ﻿using ApigeeToAzureApimMigrationTool.Core;
 using ApigeeToAzureApimMigrationTool.Core.Interface;
 using ApigeeToAzureApimMigrationTool.Service;
+using ApigeeToAzureApimMigrationTool.Service.Bundles;
 using ApigeeToAzureApimMigrationTool.Service.Transformations;
 using System;
 using System.Collections.Generic;
@@ -19,25 +20,32 @@ namespace ApigeeToApimMigrationTool.Test
 
         private AzureApimService _azureApimServiceUnderTest;
         private IBundleProvider _bundleProvider;
+        private MockApimProvider _apimProvider;
         public BundleLoaderTests()
         {
-            _bundleProvider = new ApigeeFileBundleProvider("TestBundles");
+            var testConfigPath = "TestBundles";
+
+            _bundleProvider = new ApigeeFileBundleProvider(testConfigPath);
+            _apimProvider = new MockApimProvider();
 
             IApigeeXmlLoader apigeeXmlLoader = new ApigeeXmlFileLoader(_bundleProvider);
-            IApigeeManagementApiService apigeeManagementApiService = new ApigeeManagementApiTestFileService(_bundleProvider, apigeeXmlLoader);
-            IApimProvider apimProvider = new MockApimProvider();
-            IPolicyTransformationFactory policyTransformationFactory = new PolicyTransformationFactory(apigeeManagementApiService, apimProvider, apigeeXmlLoader);
+            IApigeeManagementApiService apigeeManagementApiService = new ApigeeManagementApiTestFileService(_bundleProvider, apigeeXmlLoader, testConfigPath);
+            IPolicyTransformationFactory policyTransformationFactory = new PolicyTransformationFactory(apigeeManagementApiService, _apimProvider, apigeeXmlLoader);
 
             _azureApimServiceUnderTest = new AzureApimService(
                 apigeeXmlLoader: apigeeXmlLoader,
-                apimProvider: apimProvider,
+                apimProvider: _apimProvider,
                 policyTransformer: new ApigeeToApimPolicyTransformer(policyTransformationFactory));
         }
         [Fact]
         public async Task FileBundleLoader_WithSharedFlowPolicy_LoadsSharedFlow()
         {
-            await _bundleProvider.LoadBundle("Test-API");
+            var bundle = _bundleProvider.GetApiProxyBundle("Test-API");
+            await bundle.LoadBundle("Test-API");
             await _azureApimServiceUnderTest.ImportApi("Test-Apim", "Test-API", null, null, null);
+
+            // GetSharedFlow is a shared flow that is used by the Test-API proxy
+            Assert.True(_apimProvider.PolicyFragments.ContainsKey("GetSharedFlow"));
 
         }
     }

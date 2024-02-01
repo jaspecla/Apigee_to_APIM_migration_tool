@@ -15,6 +15,7 @@ namespace ApigeeToAzureApimMigrationTool.Service.Transformations
         private readonly IApigeeXmlLoader _apigeeXmlLoader;
         private readonly IApimProvider _apimProvider;
         private readonly IApigeeManagementApiService _apiService;
+        private readonly IBundleProvider _bundleProvider;
 
         private string _sharedFlowName;
 

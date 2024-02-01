@@ -7,6 +7,7 @@ using ApigeeToAzureApimMigrationTool.Core.dto;
 using ApigeeToAzureApimMigrationTool.Core.Dto;
 using ApigeeToAzureApimMigrationTool.Core.Interface;
 using ApigeeToAzureApimMigrationTool.Service;
+using ApigeeToAzureApimMigrationTool.Service.Bundles;
 using ApigeeToAzureApimMigrationTool.Service.Transformations;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -160,12 +161,14 @@ async Task RunMigration(ApigeeConfiguration apigeeConfiguration, EntraConfigurat
 
     builder.Services.AddSingleton<IApigeeXmlLoader, ApigeeXmlFileLoader>();
 
+    // EOD FRIDAY --- Add ConfigDir to providers
     if (apigeeConfiguration.ConfigDir != null)
     {
         builder.Services.AddSingleton<IApigeeManagementApiService, ApigeeManagementApiTestFileService>(
             serviceProvider => new ApigeeManagementApiTestFileService(
                 apigeeBundleProvider: serviceProvider.GetRequiredService<IBundleProvider>(),
-                apigeeXmlLoader: serviceProvider.GetRequiredService<IApigeeXmlLoader>()));
+                apigeeXmlLoader: serviceProvider.GetRequiredService<IApigeeXmlLoader>(),
+                localConfigPath: apigeeConfiguration.ConfigDir));
     }
     else
     {
@@ -175,20 +178,14 @@ async Task RunMigration(ApigeeConfiguration apigeeConfiguration, EntraConfigurat
             apigeeConfiguration: apigeeConfiguration));
     }
 
-    builder.Services.AddSingleton<IAzureApimService, AzureApimService>(
-        serviceProvider => new AzureApimService(
-            apigeeXmlLoader: serviceProvider.GetRequiredService<IApigeeXmlLoader>(),
-            apimProvider: serviceProvider.GetRequiredService<IApimProvider>(),
-            policyTransformer: serviceProvider.GetRequiredService<IApimPolicyTransformer>()
-            ));
+    builder.Services.AddSingleton<IAzureApimService, AzureApimService>();
 
     builder.Services.AddSingleton<IApimProvider, AzureApimProvider>(
         serviceProvider => new AzureApimProvider(apimConfiguration, entraConfiguration, keyVaultName));
 
     if (apigeeConfiguration.ConfigDir != null)
     {
-        builder.Services.AddSingleton<IBundleProvider, ApigeeFileBundleProvider>(
-            serviceProvider => new ApigeeFileBundleProvider(apigeeConfiguration.ConfigDir));
+        builder.Services.AddSingleton<IBundleProvider, ApigeeFileBundleProvider>();
     }
     else
     {
@@ -257,7 +254,7 @@ async Task MigrateApiProxy(IServiceProvider hostProvider, string proxyOrProductN
     var _apigeeManagementApiService = provider.GetRequiredService<IApigeeManagementApiService>();
     var _azureApimService = provider.GetRequiredService<IAzureApimService>();
 
-    var bundleProvider = provider.GetRequiredService<IBundleProvider>();
+    var bundleProvider = provider.GetRequiredService<IBundle>();
 
     //get api metadata
     Console.WriteLine("Downloading the proxy api bundle...");

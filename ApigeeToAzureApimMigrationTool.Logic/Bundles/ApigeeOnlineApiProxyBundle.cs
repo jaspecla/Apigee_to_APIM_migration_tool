@@ -6,15 +6,17 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace ApigeeToAzureApimMigrationTool.Service
+namespace ApigeeToAzureApimMigrationTool.Service.Bundles
 {
-    public class ApigeeOnlineBundleProvider : IBundleProvider
+    public class ApigeeOnlineApiProxyBundle : IBundle
     {
         private readonly IApigeeManagementApiService _apigeeManagementApiService;
+        private readonly string _basePath;
         private string? _bundlePath;
 
-        public ApigeeOnlineBundleProvider(IApigeeManagementApiService apigeeManagementApiService)
+        public ApigeeOnlineApiProxyBundle(string basePath, IApigeeManagementApiService apigeeManagementApiService)
         {
+            _basePath = basePath;
             _apigeeManagementApiService = apigeeManagementApiService;
         }
 
@@ -25,7 +27,7 @@ namespace ApigeeToAzureApimMigrationTool.Service
             //get the latest revision
             int maxRevision = apiProxyMetadata.revision.Select(x => int.Parse(x)).Max();
             //download api proxy bundle 
-            _bundlePath = await _apigeeManagementApiService.DownloadApiProxyBundle(proxyOrProductName, maxRevision);
+            _bundlePath = await _apigeeManagementApiService.DownloadApiProxyBundle(_basePath, proxyOrProductName, maxRevision);
         }
         public string GetBundlePath()
         {
