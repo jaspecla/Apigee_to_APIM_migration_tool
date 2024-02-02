@@ -185,11 +185,15 @@ async Task RunMigration(ApigeeConfiguration apigeeConfiguration, EntraConfigurat
 
     if (apigeeConfiguration.ConfigDir != null)
     {
-        builder.Services.AddSingleton<IBundleProvider, ApigeeFileBundleProvider>();
+        builder.Services.AddSingleton<IBundleProvider, ApigeeFileBundleProvider>(
+            serviceProvider => new ApigeeFileBundleProvider(apigeeConfiguration.ConfigDir));
     }
     else
     {
-        builder.Services.AddSingleton<IBundleProvider, ApigeeOnlineBundleProvider>();
+        var dir = Directory.GetCurrentDirectory();
+        builder.Services.AddSingleton<IBundleProvider, ApigeeOnlineBundleProvider>(
+            serviceProvider => new ApigeeOnlineBundleProvider(dir, 
+            serviceProvider.GetRequiredService<IApigeeManagementApiService>()));
     }
 
     builder.Services.AddSingleton<IPolicyTransformationFactory, PolicyTransformationFactory>();

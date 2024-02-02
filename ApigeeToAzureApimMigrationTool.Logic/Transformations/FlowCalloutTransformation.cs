@@ -44,7 +44,9 @@ namespace ApigeeToAzureApimMigrationTool.Service.Transformations
         private async Task<string> DownloadSharedFlow(string sharedFlowName)
         {
             var sharedFlowMetadata = await _apiService.GetSharedFlowByName(sharedFlowName);
-            return await _apiService.DownloadSharedFlowBundle(sharedFlowName, sharedFlowMetadata.revision.Select(x => int.Parse(x)).Max());
+            // FIXME: Get the real bundle path dir.
+            var bundlePath = Directory.GetCurrentDirectory();
+            return await _apiService.DownloadSharedFlowBundle(bundlePath, sharedFlowName, sharedFlowMetadata.revision.Select(x => int.Parse(x)).Max());
         }
 
         private async Task ImportSharedFlow(string sharedflowName, string apimName, IApimPolicyTransformer apimPolicyTransformer)
