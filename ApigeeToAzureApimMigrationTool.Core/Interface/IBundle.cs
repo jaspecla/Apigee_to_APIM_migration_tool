@@ -8,7 +8,7 @@ namespace ApigeeToAzureApimMigrationTool.Core.Interface
 {
     public interface IBundle
     {
-        Task LoadBundle(string bundleName);
+        Task LoadBundle();
         string GetBundlePath();
     }
 }

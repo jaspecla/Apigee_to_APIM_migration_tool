@@ -112,10 +112,7 @@ namespace ApigeeToAzureApimMigrationTool.Service
             };
 
             // Iterate through the bundle directory and find all the proxies that are in the product
-            // TODO: Does this work?  1/31
-            var bundle = _apigeeBundleProvider.GetApiProxyBundle(productName);
-            var bundlePath = bundle.GetBundlePath();
-            var bundleDirectories = Directory.GetDirectories(bundlePath);
+            var bundleDirectories = Directory.GetDirectories(_localConfigPath);
             foreach (var directory in bundleDirectories)
             {
                 if (Directory.Exists($"{directory}{Path.DirectorySeparatorChar}apiproxy"))

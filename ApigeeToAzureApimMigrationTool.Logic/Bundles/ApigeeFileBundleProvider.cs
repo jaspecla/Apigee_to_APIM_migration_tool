@@ -26,7 +26,7 @@ namespace ApigeeToAzureApimMigrationTool.Service.Bundles
         {
             if (!_apiProxyBundles.ContainsKey(proxyOrProductName))
             {
-                _apiProxyBundles.Add(proxyOrProductName, new ApigeeFileApiProxyBundle(_bundleBasePath));
+                _apiProxyBundles.Add(proxyOrProductName, new ApigeeFileApiProxyBundle(_bundleBasePath, proxyOrProductName));
             }
             return _apiProxyBundles[proxyOrProductName];
         }
@@ -35,7 +35,7 @@ namespace ApigeeToAzureApimMigrationTool.Service.Bundles
         {
             if (!_sharedFlowBundles.ContainsKey(sharedFlowName))
             {
-                _sharedFlowBundles.Add(sharedFlowName, new ApigeeFileSharedFlowBundle(_bundleBasePath));
+                _sharedFlowBundles.Add(sharedFlowName, new ApigeeFileSharedFlowBundle(_bundleBasePath, sharedFlowName));
             }
             return _sharedFlowBundles[sharedFlowName];
         }

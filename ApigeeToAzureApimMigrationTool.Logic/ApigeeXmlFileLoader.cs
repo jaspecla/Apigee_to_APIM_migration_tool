@@ -21,21 +21,21 @@ namespace ApigeeToAzureApimMigrationTool.Service
             return XDocument.Load(Path.Combine(bundle.GetBundlePath(), $"{proxyName}.xml"));
         }
 
-        public XDocument LoadTargetXml(string targetEndpointName)
+        public XDocument LoadTargetXml(string proxyName, string targetEndpointName)
         {
-            var bundle = _bundleProvider.GetApiProxyBundle(targetEndpointName);
+            var bundle = _bundleProvider.GetApiProxyBundle(proxyName);
             return XDocument.Load(Path.Combine(bundle.GetBundlePath(), "targets", $"{targetEndpointName}.xml"));
         }
 
-        public XDocument LoadProxyEndpointXml(string proxyEndpointName)
+        public XDocument LoadProxyEndpointXml(string proxyName, string proxyEndpointName)
         {
-            var bundle = _bundleProvider.GetApiProxyBundle(proxyEndpointName);
+            var bundle = _bundleProvider.GetApiProxyBundle(proxyName);
             return XDocument.Load(Path.Combine(bundle.GetBundlePath(), "proxies", $"{proxyEndpointName}.xml"));
         }
 
-        public XDocument LoadPolicyXml(string policyName)
+        public XDocument LoadPolicyXml(string proxyName, string policyName)
         {
-            var bundle = _bundleProvider.GetApiProxyBundle(policyName);
+            var bundle = _bundleProvider.GetApiProxyBundle(proxyName);
             return XDocument.Load(Path.Combine(bundle.GetBundlePath(), "policies", $"{policyName}.xml"));
         }
 
@@ -45,15 +45,15 @@ namespace ApigeeToAzureApimMigrationTool.Service
             return XDocument.Load(Path.Combine(bundle.GetBundlePath(), $"{sharedFlowName}.xml"));
         }
 
-        public XDocument LoadSharedFlowXml(string sharedFlowName)
+        public XDocument LoadSharedFlowXml(string sharedFlowName, string sharedFlowFileName)
         {
             var bundle = _bundleProvider.GetSharedFlowBundle(sharedFlowName);
-            return XDocument.Load(Path.Combine(bundle.GetBundlePath(), "sharedflows", $"{sharedFlowName}.xml"));
+            return XDocument.Load(Path.Combine(bundle.GetBundlePath(), "sharedflows", $"{sharedFlowFileName}.xml"));
         }
 
-        public XDocument LoadSharedFlowPolicyXml(string policyName)
+        public XDocument LoadSharedFlowPolicyXml(string sharedFlowName, string policyName)
         {
-            var bundle = _bundleProvider.GetSharedFlowBundle(policyName);
+            var bundle = _bundleProvider.GetSharedFlowBundle(sharedFlowName);
             return XDocument.Load(Path.Combine(bundle.GetBundlePath(), "policies", $"{policyName}.xml"));
         }
     }

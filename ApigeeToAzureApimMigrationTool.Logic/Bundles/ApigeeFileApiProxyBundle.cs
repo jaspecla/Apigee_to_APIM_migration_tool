@@ -11,11 +11,12 @@ namespace ApigeeToAzureApimMigrationTool.Service.Bundles
     public class ApigeeFileApiProxyBundle : IBundle
     {
         private string _bundleBasePath;
-        private string? _proxyOrProductName;
+        private string _proxyOrProductName;
 
-        public ApigeeFileApiProxyBundle(string bundleBasePath)
+        public ApigeeFileApiProxyBundle(string bundleBasePath, string proxyOrProductName)
         {
             _bundleBasePath = bundleBasePath;
+            _proxyOrProductName = proxyOrProductName;
         }
         
         public string GetBundlePath()
@@ -28,9 +29,8 @@ namespace ApigeeToAzureApimMigrationTool.Service.Bundles
             return Path.Combine(_bundleBasePath, _proxyOrProductName, "apiproxy");
         }
 
-        public Task LoadBundle(string proxyOrProductName)
+        public Task LoadBundle()
         {
-            _proxyOrProductName = proxyOrProductName;
             // Nothing to return, the bundle is already in the filesystem
             return Task.CompletedTask;
         }

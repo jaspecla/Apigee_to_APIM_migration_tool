@@ -41,7 +41,7 @@ namespace ApigeeToApimMigrationTool.Test
         public async Task FileBundleLoader_WithSharedFlowPolicy_LoadsSharedFlow()
         {
             var bundle = _bundleProvider.GetApiProxyBundle("Test-API");
-            await bundle.LoadBundle("Test-API");
+            await bundle.LoadBundle();
             await _azureApimServiceUnderTest.ImportApi("Test-Apim", "Test-API", null, null, null);
 
             // GetSharedFlow is a shared flow that is used by the Test-API proxy

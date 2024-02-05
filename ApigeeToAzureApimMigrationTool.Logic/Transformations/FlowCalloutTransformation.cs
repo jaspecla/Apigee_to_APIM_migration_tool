@@ -63,7 +63,7 @@ namespace ApigeeToAzureApimMigrationTool.Service.Transformations
 
             foreach (var sharedFlow in sharedFlows)
             {
-                var sharedFlowXml = _apigeeXmlLoader.LoadSharedFlowXml(sharedFlow.Value);
+                var sharedFlowXml = _apigeeXmlLoader.LoadSharedFlowXml(sharedFlowName, sharedFlow.Value);
                 var sharedFlowRootElement = sharedFlowXml.Element("SharedFlow");
                 var steps = sharedFlowRootElement.Elements("Step");
 

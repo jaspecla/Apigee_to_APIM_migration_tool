@@ -3,13 +3,10 @@ using ApigeeToApimMigrationTool.Core.Config;
 using ApigeeToApimMigrationTool.Core.Interface;
 using ApigeeToApimMigrationTool.DataAccess;
 using ApigeeToAzureApimMigrationTool.Core;
-using ApigeeToAzureApimMigrationTool.Core.dto;
-using ApigeeToAzureApimMigrationTool.Core.Dto;
 using ApigeeToAzureApimMigrationTool.Core.Interface;
 using ApigeeToAzureApimMigrationTool.Service;
 using ApigeeToAzureApimMigrationTool.Service.Bundles;
 using ApigeeToAzureApimMigrationTool.Service.Transformations;
-using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using System.CommandLine;
@@ -161,7 +158,6 @@ async Task RunMigration(ApigeeConfiguration apigeeConfiguration, EntraConfigurat
 
     builder.Services.AddSingleton<IApigeeXmlLoader, ApigeeXmlFileLoader>();
 
-    // EOD FRIDAY --- Add ConfigDir to providers
     if (apigeeConfiguration.ConfigDir != null)
     {
         builder.Services.AddSingleton<IApigeeManagementApiService, ApigeeManagementApiTestFileService>(
@@ -258,11 +254,13 @@ async Task MigrateApiProxy(IServiceProvider hostProvider, string proxyOrProductN
     var _apigeeManagementApiService = provider.GetRequiredService<IApigeeManagementApiService>();
     var _azureApimService = provider.GetRequiredService<IAzureApimService>();
 
-    var bundleProvider = provider.GetRequiredService<IBundle>();
+    var bundleProvider = provider.GetRequiredService<IBundleProvider>();
 
     //get api metadata
     Console.WriteLine("Downloading the proxy api bundle...");
-    await bundleProvider.LoadBundle(proxyOrProductName);
+    var apiProxyBundle = bundleProvider.GetApiProxyBundle(proxyOrProductName);
+    await apiProxyBundle.LoadBundle();
+
     Console.WriteLine($"Migrating API proxy {proxyOrProductName} to Azure APIM");
     await _azureApimService.ImportApi(apimConfig.Name, proxyOrProductName, apimConfig.OAuthConfigName, apigeeConfiguration.EnvironmentName, keyVaultName);
 }

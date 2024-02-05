@@ -11,11 +11,12 @@ namespace ApigeeToAzureApimMigrationTool.Service
     public class ApigeeFileSharedFlowBundle : IBundle
     {
         private string _bundleBasePath;
-        private string? _sharedFlowName;
+        private string _sharedFlowName;
 
-        public ApigeeFileSharedFlowBundle(string bundleBasePath)
+        public ApigeeFileSharedFlowBundle(string bundleBasePath, string sharedFlowName)
         {
             _bundleBasePath = bundleBasePath;
+            _sharedFlowName = sharedFlowName;
         }
 
         public string GetBundlePath()
@@ -28,9 +29,8 @@ namespace ApigeeToAzureApimMigrationTool.Service
             return Path.Combine(_bundleBasePath, _sharedFlowName, "sharedflowbundle");
         }
 
-        public Task LoadBundle(string sharedFlowName)
+        public Task LoadBundle()
         {   
-            _sharedFlowName = sharedFlowName;
             // Nothing to return, the bundle is already in the filesystem
             return Task.CompletedTask;
         }
