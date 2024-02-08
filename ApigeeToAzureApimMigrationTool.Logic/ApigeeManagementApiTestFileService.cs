@@ -172,13 +172,14 @@ namespace ApigeeToAzureApimMigrationTool.Service
         {
             // Just like with the API proxy metadata, do things backwards.  Get the metadata from the XML that we've 
             // already downloaded.
-            XDocument proxyXml = _apigeeXmlLoader.LoadSharedFlowXml(sharedFlowName);
+            // HACK: We're going to assume we've downlaoded the "default.xml" file for the shared flow.
+            XDocument proxyXml = _apigeeXmlLoader.LoadSharedFlowBundleXml(sharedFlowName);
             if (proxyXml.Root == null)
             {
                 throw new Exception($"Could not get xml for shared flow {sharedFlowName} from file.");
             }
 
-            XElement? sharedFlowBundleElement = proxyXml.Root.Element("SharedFlowBundle");
+            XElement? sharedFlowBundleElement = proxyXml.Element("SharedFlowBundle");
             if (sharedFlowBundleElement == null)
             {
                 throw new Exception($"Could not find SharedFlowBundle element in xml for shared flow {sharedFlowName}.");

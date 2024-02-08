@@ -30,7 +30,7 @@ namespace ApigeeToApimMigrationTool.Test
 
             IApigeeXmlLoader apigeeXmlLoader = new ApigeeXmlFileLoader(_bundleProvider);
             IApigeeManagementApiService apigeeManagementApiService = new ApigeeManagementApiTestFileService(_bundleProvider, apigeeXmlLoader, testConfigPath);
-            IPolicyTransformationFactory policyTransformationFactory = new PolicyTransformationFactory(apigeeManagementApiService, _apimProvider, apigeeXmlLoader);
+            IPolicyTransformationFactory policyTransformationFactory = new PolicyTransformationFactory(apigeeManagementApiService, _apimProvider, _bundleProvider, apigeeXmlLoader);
 
             _azureApimServiceUnderTest = new AzureApimService(
                 apigeeXmlLoader: apigeeXmlLoader,
