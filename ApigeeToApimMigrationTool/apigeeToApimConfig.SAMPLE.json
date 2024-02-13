@@ -4,8 +4,8 @@
   },
   "Apigee": {
     "OrganizationName": "my apigee org",
-    "AuthenticationBaseUrl": "https://login.apigee.com/oauth/token",
-    "ManagementBaseUrl": "https://api.enterprise.apigee.com/v1/organizations/",
+    "AuthenticationBaseUrl": "https://yourcompany.login.apigee.com",
+    "ManagementBaseUrl": "https://api.enterprise.apigee.com",
     "Passcode": "my passcode",
     "Username": "my username",
     "Password": "my password",
