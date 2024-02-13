@@ -3,6 +3,10 @@
 ##
 ## Get latest from https://github.com/github/gitignore/blob/main/VisualStudio.gitignore
 
+# Most times you shouldn't ignore launchSettings.json, but this one is pretty specific to the
+# debugger's Apigee/APIM config
+launchSettings.json
+
 # User-specific files
 *.rsuser
 *.suo
@@ -400,3 +404,4 @@ FodyWeavers.xsd
 **/credentials.json
 **/appsettings.json
 *.dccache
+/ApigeeToApimMigrationTool/Properties/launchSettings.json
