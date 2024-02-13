@@ -1,0 +1,8 @@
+{
+  "profiles": {
+    "ApigeeToApimMigrationTool": {
+      "commandName": "Project",
+      "commandLineArgs": "--configFile apigeeToApimConfig.json"
+    }
+  }
+}
